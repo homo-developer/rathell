@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Number Lookup | Cyber Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ffaa;
+            --secondary: #1877f2;
+            --accent: #42b72a;
+            --dark: #0a192f;
+            --darker: #020c1b;
+            --light: #ccd6f6;
+            --danger: #e41e3f;
+            --success: #00cc66;
+            --warning: #ffcc00;
+            --terminal-bg: #011627;
+            --terminal-text: #d6deeb;
+            --terminal-border: #1d3b53;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fira Code', monospace;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            border-radius: 50%;
+            filter: blur(40px);
+        }
+
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            background: var(--primary);
+            top: 10%;
+            left: 5%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .shape-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--secondary);
+            bottom: 10%;
+            right: 5%;
+            animation: float 20s infinite ease-in-out reverse;
+        }
+
+        .shape-3 {
+            width: 150px;
+            height: 150px;
+            background: var(--danger);
+            top: 50%;
+            left: 30%;
+            animation: float 12s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(50px, 50px); }
+            50% { transform: translate(0, 100px); }
+            75% { transform: translate(-50px, 50px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 0;
+            animation: fadeIn 1s ease;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        #phone-number {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #phone-number:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 255, 170, 0.3);
+        }
+
+        #lookup-button {
+            padding: 0.4rem 1.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #lookup-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 255, 170, 0.3);
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+        }
+
+        #lookup-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #phone-error {
+            color: var(--danger);
+            margin-bottom: 1rem;
+            display: none;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        #target-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            display: none;
+            text-align: center;
+        }
+
+        #target-phone {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 1rem 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .loading-animation {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .loading-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: loading-bounce 1.5s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loading-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .terminal {
+            background: var(--terminal-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 3rem 0;
+            border: 1px solid var(--terminal-border);
+            font-family: 'Fira Code', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.5rem;
+            color: var(--terminal-text);
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .terminal-line::before {
+            content: '>>';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+        }
+
+        .terminal-line.success { color: var(--success); }
+        .terminal-line.error { color: var(--danger); }
+        .terminal-line.warning { color: var(--warning); }
+        .terminal-line.info { color: var(--primary); }
+        .terminal-line.system { color: #9C27B0; font-weight: bold; }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 16px;
+            background: var(--primary);
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        #info {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .info-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-content {
+            color: var(--light);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            border: 1px solid var(--terminal-border);
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .notification.success i { color: var(--success); }
+        .notification.error i { color: var(--danger); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            #lookup-button {
+                width: 100%;
+            }
+
+            .info-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="container">
+        <section class="hero">
+            <h1>PHONE NUMBER LOOKUP</h1>
+            <p>Extract comprehensive information from any phone number instantly</p>
+        </section>
+
+        <div class="input-group">
+            <input type="text" id="phone-number" placeholder="Enter phone number with country code (e.g., +911234567890)">
+            <button id="lookup-button">Lookup Number</button>
+        </div>
+
+        <div id="phone-error">
+            <i class="fas fa-exclamation-circle"></i> Please enter a valid phone number with country code
+        </div>
+
+        <div id="target-display">
+            <i class="fas fa-phone"></i> Target Number: <span id="target-phone"></span>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="loading-animation" id="loading-animation">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+        </div>
+
+        <div class="terminal" id="terminal"></div>
+
+        <div id="info">
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-globe"></i> Location Information</h3>
+                <div class="info-container" id="location-info"></div>
+            </div>
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-network-wired"></i> Number Information</h3>
+                <div class="info-container" id="number-info"></div>
+            </div>
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-server"></i> Provider Information</h3>
+                <div class="info-container" id="provider-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const phoneNumber = document.getElementById('phone-number');
+        const lookupButton = document.getElementById('lookup-button');
+        const info = document.getElementById('info');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const loadingAnimation = document.getElementById('loading-animation');
+        const phoneError = document.getElementById('phone-error');
+        const targetDisplay = document.getElementById('target-display');
+        const targetPhone = document.getElementById('target-phone');
+        const locationInfo = document.getElementById('location-info');
+        const numberInfo = document.getElementById('number-info');
+        const providerInfo = document.getElementById('provider-info');
+
+        const terminalMessages = [
+            { text: "Initializing Phone Lookup...", type: "system", delay: 0 },
+            { text: "Validating phone number...", type: "info", delay: 200 },
+            { text: "Querying database...", type: "info", delay: 400 },
+            { text: "Fetching results...", type: "info", delay: 600 },
+            { text: "Lookup completed!", type: "success", delay: 800 }
+        ];
+
+        function showNotification(type, message) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'fadeInUp 0.5s ease reverse';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        function isValidPhone(phone) {
+            const phonePattern = /^\+\d{1,3}\d{6,14}$/;
+            return phonePattern.test(phone);
+        }
+
+        function addTerminalLine(terminalElement, text, type = '') {
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            terminalElement.appendChild(line);
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            line.appendChild(cursor);
+            setTimeout(() => cursor.remove(), 600);
+            terminalElement.scrollTop = terminalElement.scrollHeight;
+        }
+
+        async function fetchPhoneData(phone) {
+            const apiUrl = `https://true-call-check.vercel.app/truecaller?q=${encodeURIComponent(phone)}`;
+            const proxyUrl = `https://cors-anywhere.herokuapp.com/${apiUrl}`;
+            const urls = [apiUrl, proxyUrl];
+
+            for (const url of urls) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                    const data = await response.json();
+                    if (!data || typeof data !== 'object') throw new Error('Invalid API response');
+                    return normalizeData(data);
+                } catch (error) {
+                    console.error(`Fetch failed for ${url}: ${error.message}`);
+                    if (url === proxyUrl) throw new Error('All fetch attempts failed');
+                    continue;
+                }
+            }
+        }
+
+        function normalizeData(data) {
+            return {
+                international_format: data.international_format || 'N/A',
+                local_format: data.local_format || 'N/A',
+                country: data.country || 'N/A',
+                location: data.location || 'N/A',
+                timezones: Array.isArray(data.timezones) ? data.timezones.join(', ') : 'N/A',
+                carrier: data.carrier || 'N/A',
+                is_possible: data.is_possible ? 'Yes' : 'No',
+                name: data.Unknown || 'N/A',
+                timestamp: data.timestamp ? new Date(data.timestamp).toLocaleString() : 'N/A'
+            };
+        }
+
+        function displayInfo(data) {
+            locationInfo.innerHTML = '';
+            numberInfo.innerHTML = '';
+            providerInfo.innerHTML = '';
+
+            const locationFields = [
+                { key: 'country', label: 'Country' },
+                { key: 'location', label: 'Location' },
+                { key: 'timezones', label: 'Timezones' }
+            ];
+
+            const numberFields = [
+                { key: 'international_format', label: 'International Format' },
+                { key: 'local_format', label: 'Local Format' },
+                { key: 'is_possible', label: 'Valid Number' },
+                { key: 'name', label: 'Associated Name' }
+            ];
+
+            const providerFields = [
+                { key: 'carrier', label: 'Carrier' },
+                { key: 'timestamp', label: 'Last Updated' }
+            ];
+
+            locationFields.forEach(field => {
+                let value = data[field.key];
+                if (value && value !== 'N/A' && value !== '') {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = `<div class="info-title">${field.label}</div><div class="info-content">${value}</div>`;
+                    locationInfo.appendChild(item);
+                }
+            });
+
+            numberFields.forEach(field => {
+                let value = data[field.key];
+                if (value && value !== 'N/A' && value !== '') {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = `<div class="info-title">${field.label}</div><div class="info-content">${value}</div>`;
+                    numberInfo.appendChild(item);
+                }
+            });
+
+            providerFields.forEach(field => {
+                let value = data[field.key];
+                if (value && value !== 'N/A' && value !== '') {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = `<div class="info-title">${field.label}</div><div class="info-content">${value}</div>`;
+                    providerInfo.appendChild(item);
+                }
+            });
+        }
+
+        async function lookupPhone(phone) {
+            if (!isValidPhone(phone)) {
+                phoneError.style.display = 'block';
+                phoneNumber.focus();
+                showNotification('error', 'Invalid phone number. Use country code (e.g., +911234567890)');
+                return;
+            }
+
+            phoneError.style.display = 'none';
+            targetPhone.textContent = phone;
+            targetDisplay.style.display = 'block';
+            terminal.innerHTML = '';
+            info.style.display = 'none';
+            lookupButton.disabled = true;
+            progressContainer.style.display = 'block';
+            loadingAnimation.style.display = 'flex';
+            lookupButton.textContent = 'Looking up...';
+
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 100) progress = 100;
+                progressBar.style.width = `${progress}%`;
+                if (progress >= 100) clearInterval(progressInterval);
+            }, 100);
+
+            try {
+                for (const message of terminalMessages) {
+                    await new Promise(resolve => setTimeout(() => {
+                        addTerminalLine(terminal, message.text, message.type);
+                        resolve();
+                    }, message.delay));
+                }
+
+                const data = await fetchPhoneData(phone);
+                displayInfo(data);
+                info.style.display = 'block';
+                info.scrollIntoView({ behavior: 'smooth' });
+                showNotification('success', `Phone ${phone} looked up successfully`);
+            } catch (error) {
+                addTerminalLine(terminal, `Error: ${error.message}`, 'error');
+                showNotification('error', 'Failed to retrieve phone data: ' + error.message);
+            } finally {
+                clearInterval(progressInterval);
+                progressContainer.style.display = 'none';
+                loadingAnimation.style.display = 'none';
+                lookupButton.disabled = false;
+                lookupButton.textContent = 'Lookup Number';
+            }
+        }
+
+        lookupButton.addEventListener('click', () => lookupPhone(phoneNumber.value.trim()));
+        phoneNumber.addEventListener('keypress', e => {
+            if (e.key === 'Enter') lookupPhone(phoneNumber.value.trim());
+        });
+        phoneNumber.addEventListener('input', () => {
+            phoneError.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
+<script>
+  // Prevent right-click context menu
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Disable common keyboard shortcuts (F12, Ctrl+Shift+I, Ctrl+U, etc.)
+document.addEventListener('keydown', function(e) {
+    if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
+        (e.ctrlKey && e.key === 'U')
+    ) {
+        e.preventDefault();
+    }
+});
+
+// Disable text selection
+document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+});
+
+// Disable drag and drop
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+});
+
+// Attempt to block developer tools by detecting focus change (less reliable)
+window.addEventListener('resize', function() {
+    if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200) {
+        // Suspicious resize, possibly dev tools
+        document.body.innerHTML = '<h1>Access Denied</h1>';
+    }
+});
+
+// Obfuscate source code by overriding View Source (not fully effective)
+document.addEventListener('DOMContentLoaded', function() {
+    // Redirect or block Ctrl+U (already handled in keydown)
+    // Optionally, add a fake source view
+    window.open = function(url) {
+        if (url.includes('view-source')) {
+            alert('Source view is disabled.');
+            return false;
+        }
+    };
+});
+
+// Detect and block common browser extensions like Edora (basic heuristic)
+(function() {
+    const suspiciousClasses = ['edora', 'inspector', 'devtools'];
+    const checkExtensions = setInterval(function() {
+        suspiciousClasses.forEach(cls => {
+            if (document.querySelector(`.${cls}`)) {
+                document.body.innerHTML = '<h1>Unauthorized Tool Detected</h1>';
+                clearInterval(checkExtensions);
+            }
+        });
+    }, 1000);
+})();
+</script>

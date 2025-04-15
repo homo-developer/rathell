@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Generator | Cyber Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ffaa;
+            --secondary: #1877f2;
+            --accent: #42b72a;
+            --dark: #0a192f;
+            --darker: #020c1b;
+            --light: #ccd6f6;
+            --danger: #e41e3f;
+            --success: #00cc66;
+            --warning: #ffcc00;
+            --terminal-bg: #011627;
+            --terminal-text: #d6deeb;
+            --terminal-border: #1d3b53;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fira Code', monospace;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            border-radius: 50%;
+            filter: blur(40px);
+        }
+
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            background: var(--primary);
+            top: 10%;
+            left: 5%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .shape-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--secondary);
+            bottom: 10%;
+            right: 5%;
+            animation: float 20s infinite ease-in-out reverse;
+        }
+
+        .shape-3 {
+            width: 150px;
+            height: 150px;
+            background: var(--danger);
+            top: 50%;
+            left: 30%;
+            animation: float 12s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(50px, 50px); }
+            50% { transform: translate(0, 100px); }
+            75% { transform: translate(-50px, 50px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 0;
+            animation: fadeIn 1s ease;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            max-width: 800px;
+            margin: 2rem auto;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 255, 170, 0.3);
+        }
+
+        select.input-field {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23ccd6f6' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            padding-right: 2.5rem;
+        }
+
+        #generate-button {
+            padding: 0.4rem 1.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #generate-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 255, 170, 0.3);
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+        }
+
+        #generate-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .mode-toggle label {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .mode-toggle input:checked + label {
+            background: var(--primary);
+            color: var(--darker);
+        }
+
+        #input-error {
+            color: var(--danger);
+            margin-bottom: 1rem;
+            display: none;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 1rem 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .loading-animation {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .loading-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: loading-bounce 1.5s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loading-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .terminal {
+            background: var(--terminal-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 3rem 0;
+            border: 1px solid var(--terminal-border);
+            font-family: 'Fira Code', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.5rem;
+            color: var(--terminal-text);
+            position: relative;
+            padding-left: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .terminal-line::before {
+            content: '>>';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+        }
+
+        .terminal-line.success { color: var(--success); }
+        .terminal-line.error { color: var(--danger); }
+        .terminal-line.warning { color: var(--warning); }
+        .terminal-line.info { color: var(--primary); }
+        .terminal-line.system { color: #9C27B0; font-weight: bold; }
+
+        .copy-button {
+            background: var(--primary);
+            color: var(--darker);
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 16px;
+            background: var(--primary);
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            border: 1px solid var(--terminal-border);
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .notification.success i { color: var(--success); }
+        .notification.error i { color: var(--danger); }
+
+        .card-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            display: none;
+            text-align: center;
+            font-size: 1.2rem;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .card-preview span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .control-button {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--light);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: var(--primary);
+            color: var(--darker);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+            #random-mode{
+              accent-color:#00ffaa ;
+            }
+            #custom-mode{
+              accent-color: #00ffaa;
+            }
+
+            .input-field {
+                width: 100%;
+            }
+
+            #generate-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="container">
+        <section class="hero">
+            <h1>CREDIT CARD GENERATOR</h1>
+            <p>Generate random or custom credit card details instantly</p>
+        </section>
+
+        <div class="mode-toggle">
+            <input type="radio" id="random-mode" name="mode" value="random" checked>
+            <label for="random-mode">Random</label>
+            <input type="radio" id="custom-mode" name="mode" value="custom">
+            <label for="custom-mode">Custom</label>
+        </div>
+
+        <div class="input-group">
+            <select id="card-type" class="input-field">
+                <option value="any">Any Card Type</option>
+                <option value="visa">Visa</option>
+                <option value="mastercard">MasterCard</option>
+                <option value="amex">American Express</option>
+                <option value="discover">Discover</option>
+            </select>
+            <input type="text" id="bin-input" class="input-field" placeholder="Enter BIN (e.g., 4532)" disabled>
+            <input type="text" id="exp-date" class="input-field" placeholder="MM/YY (optional)" disabled>
+            <input type="text" id="cvv" class="input-field" placeholder="CVV (optional)" disabled>
+        </div>
+
+        <div class="input-group">
+            <input type="number" id="quantity" class="input-field" placeholder="Quantity (1-100)" min="1" max="100" value="1">
+            <button id="generate-button">Generate Cards</button>
+        </div>
+
+        <div id="input-error">
+            <i class="fas fa-exclamation-circle"></i> Please check your inputs
+        </div>
+
+        <div class="card-preview" id="card-preview">
+            Preview: <span id="preview-text"></span>
+        </div>
+
+        <div class="controls">
+            <button class="control-button" id="export-csv">Export to CSV</button>
+            <button class="control-button" id="clear-terminal">Clear Terminal</button>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="loading-animation" id="loading-animation">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+        </div>
+
+        <div class="terminal" id="terminal"></div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const randomMode = document.getElementById('random-mode');
+        const customMode = document.getElementById('custom-mode');
+        const cardType = document.getElementById('card-type');
+        const binInput = document.getElementById('bin-input');
+        const expDate = document.getElementById('exp-date');
+        const cvvInput = document.getElementById('cvv');
+        const quantityInput = document.getElementById('quantity');
+        const generateButton = document.getElementById('generate-button');
+        const inputError = document.getElementById('input-error');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const loadingAnimation = document.getElementById('loading-animation');
+        const cardPreview = document.getElementById('card-preview');
+        const previewText = document.getElementById('preview-text');
+        const exportCsvButton = document.getElementById('export-csv');
+        const clearTerminalButton = document.getElementById('clear-terminal');
+
+        const cardPrefixes = {
+            visa: ['4'],
+            mastercard: ['51', '52', '53', '54', '55'],
+            amex: ['34', '37'],
+            discover: ['6011', '644', '645', '646', '647', '648', '649', '65']
+        };
+
+        const cardLengths = {
+            visa: 16,
+            mastercard: 16,
+            amex: 15,
+            discover: 16
+        };
+
+        let generatedCards = [];
+
+        function showNotification(type, message) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'fadeInUp 0.5s ease reverse';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        function addTerminalLine(terminalElement, text, type = '', copyText = '') {
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            if (copyText) {
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.textContent = 'Copy';
+                copyButton.onclick = () => {
+                    navigator.clipboard.writeText(copyText);
+                    showNotification('success', 'Copied to clipboard');
+                };
+                line.appendChild(copyButton);
+            }
+            terminalElement.appendChild(line);
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            line.appendChild(cursor);
+            setTimeout(() => cursor.remove(), 600);
+            terminalElement.scrollTop = terminalElement.scrollHeight;
+        }
+
+        function luhnCheck(number) {
+            let sum = 0;
+            let isEven = false;
+            for (let i = number.length - 1; i >= 0; i--) {
+                let digit = parseInt(number[i]);
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                sum += digit;
+                isEven = !isEven;
+            }
+            return sum % 10 === 0;
+        }
+
+        function generateLuhnDigit(partialNumber) {
+            let sum = 0;
+            let isEven = true;
+            for (let i = partialNumber.length - 1; i >= 0; i--) {
+                let digit = parseInt(partialNumber[i]);
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                sum += digit;
+                isEven = !isEven;
+            }
+            return (10 - (sum % 10)) % 10;
+        }
+
+        function generateRandomNumber(length) {
+            return Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, '0');
+        }
+
+        function generateExpirationDate() {
+            const now = new Date();
+            const year = now.getFullYear() + Math.floor(Math.random() * 5) + 1;
+            const month = Math.floor(Math.random() * 12) + 1;
+            return `${month.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
+        }
+
+        function generateCvv(cardType) {
+            const length = cardType === 'amex' ? 4 : 3;
+            return generateRandomNumber(length);
+        }
+
+        function formatCardNumber(number) {
+            return number.match(/.{1,4}/g).join(' ');
+        }
+
+        function validateInputs() {
+            if (randomMode.checked) return true;
+            const bin = binInput.value.replace(/\D/g, '');
+            if (bin && (bin.length < 4 || bin.length > 8)) {
+                inputError.textContent = 'BIN must be 4-8 digits';
+                inputError.style.display = 'block';
+                return false;
+            }
+            const exp = expDate.value;
+            if (exp && !/^\d{2}\/\d{2}$/.test(exp)) {
+                inputError.textContent = 'Expiration date must be MM/YY';
+                inputError.style.display = 'block';
+                return false;
+            }
+            const cvv = cvvInput.value;
+            if (cvv && !/^\d{3,4}$/.test(cvv)) {
+                inputError.textContent = 'CVV must be 3-4 digits';
+                inputError.style.display = 'block';
+                return false;
+            }
+            const qty = parseInt(quantityInput.value);
+            if (isNaN(qty) || qty < 1 || qty > 100) {
+                inputError.textContent = 'Quantity must be 1-100';
+                inputError.style.display = 'block';
+                return false;
+            }
+            return true;
+        }
+
+        async function generateCards() {
+            if (!validateInputs()) return;
+
+            inputError.style.display = 'none';
+            terminal.innerHTML = '';
+            generateButton.disabled = true;
+            progressContainer.style.display = 'block';
+            loadingAnimation.style.display = 'flex';
+            generateButton.textContent = 'Generating...';
+
+            generatedCards = [];
+            const qty = parseInt(quantityInput.value);
+            const selectedType = cardType.value;
+            const isRandom = randomMode.checked;
+
+            const messages = [
+                { text: "Initializing Card Generator...", type: "system", delay: 0 },
+                { text: "Configuring parameters...", type: "info", delay: 200 },
+                { text: "Generating card details...", type: "info", delay: 400 }
+            ];
+
+            try {
+                for (const [index, message] of messages.entries()) {
+                    await new Promise(resolve => setTimeout(() => {
+                        addTerminalLine(terminal, message.text, message.type);
+                        resolve();
+                    }, message.delay));
+                }
+
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 100 / qty;
+                    if (progress > 100) progress = 100;
+                    progressBar.style.width = `${progress}%`;
+                }, 100);
+
+                for (let i = 0; i < qty; i++) {
+                    let cardNum, cardLen, prefix;
+                    const effectiveType = isRandom && selectedType === 'any' ? 
+                        Object.keys(cardPrefixes)[Math.floor(Math.random() * Object.keys(cardPrefixes).length)] : 
+                        selectedType === 'any' ? 'visa' : selectedType;
+
+                    cardLen = cardLengths[effectiveType] || 16;
+
+                    if (isRandom) {
+                        prefix = cardPrefixes[effectiveType][Math.floor(Math.random() * cardPrefixes[effectiveType].length)];
+                    } else {
+                        const bin = binInput.value.replace(/\D/g, '');
+                        prefix = bin || cardPrefixes[effectiveType][0];
+                    }
+
+                    const remainingLen = cardLen - prefix.length - 1;
+                    let partialNum = prefix + generateRandomNumber(remainingLen);
+                    const checkDigit = generateLuhnDigit(partialNum);
+                    cardNum = partialNum + checkDigit;
+
+                    if (!luhnCheck(cardNum)) {
+                        addTerminalLine(terminal, 'Luhn validation failed, retrying...', 'warning');
+                        i--;
+                        continue;
+                    }
+
+                    const exp = isRandom || !expDate.value ? generateExpirationDate() : expDate.value;
+                    const cvv = isRandom || !cvvInput.value ? generateCvv(effectiveType) : cvvInput.value;
+                    const formattedNum = formatCardNumber(cardNum);
+                    const cardDetails = `${formattedNum}|${exp}|${cvv}|${effectiveType.charAt(0).toUpperCase() + effectiveType.slice(1)}`;
+
+                    generatedCards.push({ number: cardNum, exp, cvv, type: effectiveType });
+                    addTerminalLine(terminal, `Generated: ${cardDetails}`, 'success', cardDetails);
+
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                showNotification('success', `Generated ${qty} card(s) successfully`);
+
+                cardPreview.style.display = 'block';
+                previewText.textContent = `${formatCardNumber(generatedCards[0].number)} | ${generatedCards[0].exp} | ${generatedCards[0].cvv} | ${generatedCards[0].type}`;
+            } catch (error) {
+                addTerminalLine(terminal, `Error: ${error.message}`, 'error');
+                showNotification('error', 'Failed to generate cards');
+            } finally {
+                progressContainer.style.display = 'none';
+                loadingAnimation.style.display = 'none';
+                generateButton.disabled = false;
+                generateButton.textContent = 'Generate Cards';
+            }
+        }
+
+        function exportToCsv() {
+            if (!generatedCards.length) {
+                showNotification('error', 'No cards to export');
+                return;
+            }
+
+            const csvContent = [
+                "Number,Expiration,CVV,Type",
+                ...generatedCards.map(card => `${formatCardNumber(card.number)},${card.exp},${card.cvv},${card.type}`)
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'generated_cards.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('success', 'Cards exported to CSV');
+        }
+
+        randomMode.addEventListener('change', () => {
+            binInput.disabled = true;
+            expDate.disabled = true;
+            cvvInput.disabled = true;
+            inputError.style.display = 'none';
+            cardPreview.style.display = 'none';
+        });
+
+        customMode.addEventListener('change', () => {
+            binInput.disabled = false;
+            expDate.disabled = false;
+            cvvInput.disabled = false;
+            inputError.style.display = 'none';
+            cardPreview.style.display = 'none';
+        });
+
+        binInput.addEventListener('input', () => {
+            inputError.style.display = 'none';
+            const bin = binInput.value.replace(/\D/g, '');
+            if (bin) {
+                const previewNum = bin + 'X'.repeat(cardLengths[cardType.value] - bin.length);
+                previewText.textContent = formatCardNumber(previewNum);
+                cardPreview.style.display = 'block';
+            } else {
+                cardPreview.style.display = 'none';
+            }
+        });
+
+        generateButton.addEventListener('click', generateCards);
+        exportCsvButton.addEventListener('click', exportToCsv);
+        clearTerminalButton.addEventListener('click', () => {
+            terminal.innerHTML = '';
+            cardPreview.style.display = 'none';
+            showNotification('success', 'Terminal cleared');
+        });
+    </script>
+</body>
+</html>
+<script>
+  // Prevent right-click context menu
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Disable common keyboard shortcuts (F12, Ctrl+Shift+I, Ctrl+U, etc.)
+document.addEventListener('keydown', function(e) {
+    if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
+        (e.ctrlKey && e.key === 'U')
+    ) {
+        e.preventDefault();
+    }
+});
+
+// Disable text selection
+document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+});
+
+// Disable drag and drop
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+});
+
+// Attempt to block developer tools by detecting focus change (less reliable)
+window.addEventListener('resize', function() {
+    if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200) {
+        // Suspicious resize, possibly dev tools
+        document.body.innerHTML = '<h1>Access Denied</h1>';
+    }
+});
+
+// Obfuscate source code by overriding View Source (not fully effective)
+document.addEventListener('DOMContentLoaded', function() {
+    // Redirect or block Ctrl+U (already handled in keydown)
+    // Optionally, add a fake source view
+    window.open = function(url) {
+        if (url.includes('view-source')) {
+            alert('Source view is disabled.');
+            return false;
+        }
+    };
+});
+
+// Detect and block common browser extensions like Edora (basic heuristic)
+(function() {
+    const suspiciousClasses = ['edora', 'inspector', 'devtools'];
+    const checkExtensions = setInterval(function() {
+        suspiciousClasses.forEach(cls => {
+            if (document.querySelector(`.${cls}`)) {
+                document.body.innerHTML = '<h1>Unauthorized Tool Detected</h1>';
+                clearInterval(checkExtensions);
+            }
+        });
+    }, 1000);
+})();
+</script>

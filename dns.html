@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNS Lookup | Cyber Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ffaa;
+            --secondary: #1877f2;
+            --accent: #42b72a;
+            --dark: #0a192f;
+            --darker: #020c1b;
+            --light: #ccd6f6;
+            --danger: #e41e3f;
+            --success: #00cc66;
+            --warning: #ffcc00;
+            --terminal-bg: #011627;
+            --terminal-text: #d6deeb;
+            --terminal-border: #1d3b53;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fira Code', monospace;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            border-radius: 50%;
+            filter: blur(40px);
+        }
+
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            background: var(--primary);
+            top: 10%;
+            left: 5%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .shape-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--secondary);
+            bottom: 10%;
+            right: 5%;
+            animation: float 20s infinite ease-in-out reverse;
+        }
+
+        .shape-3 {
+            width: 150px;
+            height: 150px;
+            background: var(--danger);
+            top: 50%;
+            left: 30%;
+            animation: float 12s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(50px, 50px); }
+            50% { transform: translate(0, 100px); }
+            75% { transform: translate(-50px, 50px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 0;
+            animation: fadeIn 1s ease;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        #domain {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #domain:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 255, 170, 0.3);
+        }
+
+        #scan-button {
+            padding: 0.4rem 1.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #scan-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 255, 170, 0.3);
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+        }
+
+        #scan-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #domain-error {
+            color: var(--danger);
+            margin-bottom: 1rem;
+            display: none;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        #target-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            display: none;
+            text-align: center;
+        }
+
+        #target-domain {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 1rem 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .loading-animation {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .loading-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: loading-bounce 1.5s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loading-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .terminal {
+            background: var(--terminal-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 3rem 0;
+            border: 1px solid var(--terminal-border);
+            font-family: 'Fira Code', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.5rem;
+            color: var(--terminal-text);
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .terminal-line::before {
+            content: '>>';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+        }
+
+        .terminal-line.success { color: var(--success); }
+        .terminal-line.error { color: var(--danger); }
+        .terminal-line.warning { color: var(--warning); }
+        .terminal-line.info { color: var(--primary); }
+        .terminal-line.system { color: #9C27B0; font-weight: bold; }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 16px;
+            background: var(--primary);
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        #info {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .info-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-content {
+            color: var(--light);
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            border: 1px solid var(--terminal-border);
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .notification.success i { color: var(--success); }
+        .notification.error i { color: var(--danger); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            #scan-button {
+                width: 100%;
+            }
+
+            .info-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="container">
+        <section class="hero">
+            <h1>DNS LOOKUP</h1>
+            <p>Extract comprehensive DNS information from any domain instantly</p>
+        </section>
+
+        <div class="input-group">
+            <input type="text" id="domain" placeholder="Enter domain (e.g., example.com)">
+            <button id="scan-button">Scan DNS</button>
+        </div>
+
+        <div id="domain-error">
+            <i class="fas fa-exclamation-circle"></i> Please enter a valid domain
+        </div>
+
+        <div id="target-display">
+            <i class="fas fa-globe"></i> Target Domain: <span id="target-domain"></span>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="loading-animation" id="loading-animation">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+        </div>
+
+        <div class="terminal" id="terminal"></div>
+
+        <div id="info">
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-globe"></i> Domain Information</h3>
+                <div class="info-container" id="domain-info"></div>
+            </div>
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-network-wired"></i> DNS Records</h3>
+                <div class="info-container" id="dns-info"></div>
+            </div>
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-server"></i> WHOIS Information</h3>
+                <div class="info-container" id="whois-info"></div>
+            </div>
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> Additional Information</h3>
+                <div class="info-container" id="additional-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const domainInput = document.getElementById('domain');
+        const scanButton = document.getElementById('scan-button');
+        const info = document.getElementById('info');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const loadingAnimation = document.getElementById('loading-animation');
+        const domainError = document.getElementById('domain-error');
+        const targetDisplay = document.getElementById('target-display');
+        const targetDomain = document.getElementById('target-domain');
+        const domainInfo = document.getElementById('domain-info');
+        const dnsInfo = document.getElementById('dns-info');
+        const whoisInfo = document.getElementById('whois-info');
+        const additionalInfo = document.getElementById('additional-info');
+
+        const terminalMessages = [
+            { text: "Initializing DNS Lookup Pro...", type: "system", delay: 0 },
+            { text: "Validating domain name...", type: "info", delay: 200 },
+            { text: "Querying DNS servers...", type: "info", delay: 400 },
+            { text: "Fetching WHOIS data...", type: "info", delay: 600 },
+            { text: "Scan completed!", type: "success", delay: 800 }
+        ];
+
+        function showNotification(type, message) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'fadeInUp 0.5s ease reverse';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        function isValidDomain(domain) {
+            const domainPattern = /^(?!:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+            return domainPattern.test(domain);
+        }
+
+        function addTerminalLine(terminalElement, text, type = '') {
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            terminalElement.appendChild(line);
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            line.appendChild(cursor);
+            setTimeout(() => cursor.remove(), 600);
+            terminalElement.scrollTop = terminalElement.scrollHeight;
+        }
+
+        async function fetchDnsData(domain) {
+            const types = ['A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME', 'SOA', 'SRV', 'DNSKEY', 'CAA'];
+            const data = {};
+            const resolvers = [
+                `https://dns.google/resolve`,
+                `https://dns.quad9.net/dns-query`
+            ];
+
+            for (const type of types) {
+                for (const resolver of resolvers) {
+                    try {
+                        const response = await fetch(`${resolver}?name=${encodeURIComponent(domain)}&type=${type}`, {
+                            headers: { 'Accept': 'application/dns-json' }
+                        });
+                        if (!response.ok) continue;
+                        const result = await response.json();
+                        if (result.Answer) {
+                            data[type] = result.Answer.map(a => a.data);
+                            break;
+                        }
+                    } catch {
+                        continue;
+                    }
+                }
+                if (!data[type]) data[type] = [];
+            }
+
+            try {
+                const ip = data.A?.[0] || data.AAAA?.[0];
+                if (ip) {
+                    const geoResponse = await fetch(`http://ip-api.com/json/${ip}?fields=66846719`);
+                    if (geoResponse.ok) {
+                        data.geo = await geoResponse.json();
+                    }
+                }
+            } catch {}
+
+            try {
+                const whoisResponse = await fetch(`https://api.whois.com/v1/whois?domain=${encodeURIComponent(domain)}`);
+                if (whoisResponse.ok) {
+                    data.whois = await whoisResponse.json();
+                }
+            } catch {}
+
+            return normalizeData(data, domain);
+        }
+
+        function normalizeData(data, domain) {
+            const soa = data.SOA?.[0]?.split(' ') || [];
+            return {
+                domain: domain,
+                ipAddress: data.A?.join(', ') || 'N/A',
+                ipv6Address: data.AAAA?.join(', ') || 'N/A',
+                nameservers: data.NS?.join(', ') || 'N/A',
+                mxRecords: data.MX?.join(', ') || 'N/A',
+                txtRecords: data.TXT?.join(', ') || 'N/A',
+                cnameRecords: data.CNAME?.join(', ') || 'N/A',
+                soaPrimaryNs: soa[0] || 'N/A',
+                soaAdminEmail: soa[1]?.replace(/\./g, '@') || 'N/A',
+                soaSerial: soa[2] || 'N/A',
+                soaRefresh: soa[3] || 'N/A',
+                soaRetry: soa[4] || 'N/A',
+                soaExpire: soa[5] || 'N/A',
+                soaTtl: soa[6] || 'N/A',
+                srvRecords: data.SRV?.join(', ') || 'N/A',
+                dnssec: data.DNSKEY?.length ? 'Enabled' : 'Disabled',
+                dnskeyRecords: data.DNSKEY?.join(', ') || 'N/A',
+                caaRecords: data.CAA?.join(', ') || 'N/A',
+                registrar: data.whois?.registrar?.name || 'N/A',
+                registrarUrl: data.whois?.registrar?.url || 'N/A',
+                registrantName: data.whois?.registrant?.name || 'N/A',
+                registrantOrg: data.whois?.registrant?.organization || 'N/A',
+                registrantEmail: data.whois?.registrant?.email || 'N/A',
+                createdDate: data.whois?.dates?.created || 'N/A',
+                expiryDate: data.whois?.dates?.expires || 'N/A',
+                updatedDate: data.whois?.dates?.updated || 'N/A',
+                nameServerCount: data.NS?.length || 0,
+                country: data.geo?.country || 'N/A',
+                region: data.geo?.regionName || 'N/A',
+                city: data.geo?.city || 'N/A',
+                isp: data.geo?.isp || 'N/A',
+                org: data.geo?.org || 'N/A',
+                as: data.geo?.as || 'N/A'
+            };
+        }
+
+        function displayInfo(data) {
+            domainInfo.innerHTML = '';
+            dnsInfo.innerHTML = '';
+            whoisInfo.innerHTML = '';
+            additionalInfo.innerHTML = '';
+
+            const domainFields = [
+                { key: 'domain', label: 'Domain Name' },
+                { key: 'ipAddress', label: 'IPv4 Address' },
+                { key: 'ipv6Address', label: 'IPv6 Address' }
+            ];
+
+            const dnsFields = [
+                { key: 'nameservers', label: 'Nameservers' },
+                { key: 'mxRecords', label: 'MX Records' },
+                { key: 'txtRecords', label: 'TXT Records' },
+                { key: 'cnameRecords', label: 'CNAME Records' },
+                { key: 'soaPrimaryNs', label: 'SOA Primary NS' },
+                { key: 'soaAdminEmail', label: 'SOA Admin Email' },
+                { key: 'soaSerial', label: 'SOA Serial' },
+                { key: 'soaRefresh', label: 'SOA Refresh' },
+                { key: 'soaRetry', label: 'SOA Retry' },
+                { key: 'soaExpire', label: 'SOA Expire' },
+                { key: 'soaTtl', label: 'SOA TTL' },
+                { key: 'srvRecords', label: 'SRV Records' },
+                { key: 'dnskeyRecords', label: 'DNSKEY Records' },
+                { key: 'caaRecords', label: 'CAA Records' },
+                { key: 'nameServerCount', label: 'NS Count', transform: val => val.toString() }
+            ];
+
+            const whoisFields = [
+                { key: 'registrar', label: 'Registrar' },
+                { key: 'registrarUrl', label: 'Registrar URL' },
+                { key: 'registrantName', label: 'Registrant Name' },
+                { key: 'registrantOrg', label: 'Registrant Org' },
+                { key: 'registrantEmail', label: 'Registrant Email' },
+                { key: 'createdDate', label: 'Created Date' },
+                { key: 'expiryDate', label: 'Expiry Date' },
+                { key: 'updatedDate', label: 'Updated Date' }
+            ];
+
+            const additionalFields = [
+                { key: 'dnssec', label: 'DNSSEC Status' },
+                { key: 'country', label: 'Country' },
+                { key: 'region', label: 'Region' },
+                { key: 'city', label: 'City' },
+                { key: 'isp', label: 'ISP' },
+                { key: 'org', label: 'Organization' },
+                { key: 'as', label: 'ASN' }
+            ];
+
+            domainFields.forEach(field => {
+                let value = data[field.key];
+                if (value && value !== 'N/A') {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = `<div class="info-title">${field.label}</div><div class="info-content">${value}</div>`;
+                    domainInfo.appendChild(item);
+                }
+            });
+
+            dnsFields.forEach(field => {
+                let value = field.transform ? field.transform(data[field.key]) : data[field.key];
+                if (value && value !== 'N/A' && value !== '0') {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = `<div class="info-title">${field.label}</div><div class="info-content">${value}</div>`;
+                    dnsInfo.appendChild(item);
+                }
+            });
+
+            whoisFields.forEach(field => {
+                let value = data[field.key];
+                if (value && value !== 'N/A') {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = `<div class="info-title">${field.label}</div><div class="info-content">${value}</div>`;
+                    whoisInfo.appendChild(item);
+                }
+            });
+
+            additionalFields.forEach(field => {
+                let value = data[field.key];
+                if (value && value !== 'N/A') {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = `<div class="info-title">${field.label}</div><div class="info-content">${value}</div>`;
+                    additionalInfo.appendChild(item);
+                }
+            });
+        }
+
+        async function scanDomain(domain) {
+            if (!isValidDomain(domain)) {
+                domainError.style.display = 'block';
+                domainInput.focus();
+                showNotification('error', 'Invalid domain name');
+                return;
+            }
+
+            domainError.style.display = 'none';
+            targetDomain.textContent = domain;
+            targetDisplay.style.display = 'block';
+            terminal.innerHTML = '';
+            info.style.display = 'none';
+            scanButton.disabled = true;
+            progressContainer.style.display = 'block';
+            loadingAnimation.style.display = 'flex';
+            scanButton.textContent = 'Scanning...';
+
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 100) progress = 100;
+                progressBar.style.width = `${progress}%`;
+                if (progress >= 100) clearInterval(progressInterval);
+            }, 100);
+
+            try {
+                for (const [index, message] of terminalMessages.entries()) {
+                    await new Promise(resolve => setTimeout(() => {
+                        addTerminalLine(terminal, message.text, message.type);
+                        resolve();
+                    }, message.delay));
+                }
+
+                const data = await fetchDnsData(domain);
+                displayInfo(data);
+                info.style.display = 'block';
+                info.scrollIntoView({ behavior: 'smooth' });
+                showNotification('success', `Domain ${domain} scanned successfully`);
+            } catch (error) {
+                addTerminalLine(terminal, `Error: ${error.message}`, 'error');
+                showNotification('error', 'Failed to retrieve DNS data');
+            } finally {
+                progressContainer.style.display = 'none';
+                loadingAnimation.style.display = 'none';
+                scanButton.disabled = false;
+                scanButton.textContent = 'Scan DNS';
+            }
+        }
+
+        scanButton.addEventListener('click', () => scanDomain(domainInput.value.trim()));
+        domainInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') scanDomain(domainInput.value.trim());
+        });
+        domainInput.addEventListener('input', () => {
+            domainError.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
+<script>
+  // Prevent right-click context menu
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Disable common keyboard shortcuts (F12, Ctrl+Shift+I, Ctrl+U, etc.)
+document.addEventListener('keydown', function(e) {
+    if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
+        (e.ctrlKey && e.key === 'U')
+    ) {
+        e.preventDefault();
+    }
+});
+
+// Disable text selection
+document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+});
+
+// Disable drag and drop
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+});
+
+// Attempt to block developer tools by detecting focus change (less reliable)
+window.addEventListener('resize', function() {
+    if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200) {
+        // Suspicious resize, possibly dev tools
+        document.body.innerHTML = '<h1>Access Denied</h1>';
+    }
+});
+
+// Obfuscate source code by overriding View Source (not fully effective)
+document.addEventListener('DOMContentLoaded', function() {
+    // Redirect or block Ctrl+U (already handled in keydown)
+    // Optionally, add a fake source view
+    window.open = function(url) {
+        if (url.includes('view-source')) {
+            alert('Source view is disabled.');
+            return false;
+        }
+    };
+});
+
+// Detect and block common browser extensions like Edora (basic heuristic)
+(function() {
+    const suspiciousClasses = ['edora', 'inspector', 'devtools'];
+    const checkExtensions = setInterval(function() {
+        suspiciousClasses.forEach(cls => {
+            if (document.querySelector(`.${cls}`)) {
+                document.body.innerHTML = '<h1>Unauthorized Tool Detected</h1>';
+                clearInterval(checkExtensions);
+            }
+        });
+    }, 1000);
+})();
+</script>

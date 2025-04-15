@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Crypto Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ffaa;
+            --secondary: #1e90ff;
+            --accent: #42b72a;
+            --dark: #0a192f;
+            --darker: #020c1b;
+            --light: #ccd6f6;
+            --danger: #ff4444;
+            --success: #00cc66;
+            --warning: #ffcc00;
+            --terminal-bg: #011627;
+            --terminal-text: #d6deeb;
+            --terminal-border: #1d3b53;
+            --shadow: rgba(0, 255, 170, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Fira Code', monospace;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.15;
+            border-radius: 50%;
+            filter: blur(50px);
+            transition: all 0.5s ease;
+        }
+
+        .shape-1 {
+            width: 250px;
+            height: 250px;
+            background: var(--primary);
+            top: 15%;
+            left: 10%;
+            animation: float 12s infinite ease-in-out;
+        }
+
+        .shape-2 {
+            width: 350px;
+            height: 350px;
+            background: var(--secondary);
+            bottom: 15%;
+            right: 10%;
+            animation: float 18s infinite ease-in-out reverse;
+        }
+
+        .shape-3 {
+            width: 200px;
+            height: 200px;
+            background: var(--accent);
+            top: 60%;
+            left: 40%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(60px, 60px) scale(1.1); }
+            50% { transform: translate(0, 120px) scale(0.9); }
+            75% { transform: translate(-60px, 60px) scale(1.05); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            animation: fadeIn 1.2s ease;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px var(--shadow);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .crypto-mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.75rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        .mode-button {
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--primary);
+            color: var(--light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .mode-button:hover {
+            background: var(--primary);
+            color: var(--darker);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+
+        .mode-button.active {
+            background: var(--primary);
+            color: var(--darker);
+            border-color: var(--secondary);
+            box-shadow: 0 0 10px var(--shadow);
+        }
+
+        .operation-toggle {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .operation-button {
+            padding: 0.75rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--secondary);
+            color: var(--light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .operation-button:hover {
+            background: var(--secondary);
+            color: var(--darker);
+            transform: translateY(-2px);
+        }
+
+        .operation-button.active {
+            background: var(--secondary);
+            color: var(--darker);
+            border-color: var(--primary);
+        }
+
+        .operation-button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-group {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+        #input-text, #crypto-key {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #input-text {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        #input-text:focus, #crypto-key:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--shadow);
+        }
+
+        .key-input {
+            margin: 1.5rem 0;
+            display: none;
+        }
+
+        .key-input.active {
+            display: block;
+        }
+
+        #process-button {
+            display: block;
+            width: 200px;
+            margin: 1rem auto;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--darker);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #process-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px var(--shadow);
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+        }
+
+        #process-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #crypto-error {
+            color: var(--danger);
+            margin: 1rem 0;
+            display: none;
+            font-size: 0.9rem;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .loading-animation {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .loading-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: loading-bounce 1.4s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loading-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .terminal {
+            background: var(--terminal-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid var(--terminal-border);
+            font-family: 'Fira Code', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal-line {
+            margin-bottom: 0.5rem;
+            color: var(--terminal-text);
+            position: relative;
+            padding-left: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .terminal-line::before {
+            content: '>>';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+        }
+
+        .terminal-line.success { color: var(--success); }
+        .terminal-line.error { color: var(--danger); }
+        .terminal-line.warning { color: var(--warning); }
+        .terminal-line.info { color: var(--primary); }
+        .terminal-line.system { color: #9C27B0; font-weight: bold; }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 16px;
+            background: var(--primary);
+            vertical-align: middle;
+            margin-left: 4px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        #info {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .info-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .info-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .info-content {
+            color: var(--light);
+            word-break: break-all;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            border: 1px solid var(--terminal-border);
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: fadeInUp 0.5s ease;
+            font-size: 0.9rem;
+        }
+
+        .notification.success i { color: var(--success); }
+        .notification.error i { color: var(--danger); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .crypto-mode-selector {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            }
+
+            .mode-button {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .operation-button {
+                padding: 0.5rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .input-group {
+                margin: 1.5rem auto;
+            }
+
+            #input-text {
+                min-height: 120px;
+            }
+
+            .info-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            #process-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="container">
+        <section class="hero">
+            <h1>ULTIMATE CRYPTO TOOLKIT</h1>
+            <p>Securely Encrypt, Decrypt, and Hash with Advanced Algorithms</p>
+        </section>
+
+        <div class="crypto-mode-selector">
+            <button class="mode-button active" data-mode="base64">Base64</button>
+            <button class="mode-button" data-mode="aes">AES</button>
+            <button class="mode-button" data-mode="sha256">SHA-256</button>
+            <button class="mode-button" data-mode="hex">Hex</button>
+            <button class="mode-button" data-mode="md5">MD5</button>
+            <button class="mode-button" data-mode="rot13">ROT13</button>
+            <button class="mode-button" data-mode="caesar">Caesar</button>
+            <button class="mode-button" data-mode="vigenere">Vigenere</button>
+        </div>
+
+        <div class="operation-toggle">
+            <button class="operation-button active" data-operation="encrypt">Encrypt</button>
+            <button class="operation-button" data-operation="decrypt">Decrypt</button>
+        </div>
+
+        <div class="input-group">
+            <textarea id="input-text" placeholder="Enter text to encrypt/decrypt"></textarea>
+        </div>
+
+        <div class="key-input" id="key-input">
+            <input type="text" id="crypto-key" placeholder="Enter encryption key">
+        </div>
+
+        <div class="input-group">
+            <button id="process-button">Process</button>
+        </div>
+
+        <div id="crypto-error">
+            <i class="fas fa-exclamation-circle"></i> <span id="error-message">Please enter valid input</span>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="loading-animation" id="loading-animation">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+        </div>
+
+        <div class="terminal" id="terminal"></div>
+
+        <div id="info">
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-lock"></i> Processing Result</h3>
+                <div class="info-container" id="result-info"></div>
+            </div>
+            <div class="info-section">
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> Processing Details</h3>
+                <div class="info-container" id="details-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const inputText = document.getElementById('input-text');
+        const processButton = document.getElementById('process-button');
+        const cryptoError = document.getElementById('crypto-error');
+        const errorMessage = document.getElementById('error-message');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const loadingAnimation = document.getElementById('loading-animation');
+        const resultInfo = document.getElementById('result-info');
+        const detailsInfo = document.getElementById('details-info');
+        const info = document.getElementById('info');
+        const modeButtons = document.querySelectorAll('.mode-button');
+        const operationButtons = document.querySelectorAll('.operation-button');
+        const keyInput = document.getElementById('key-input');
+        const cryptoKey = document.getElementById('crypto-key');
+
+        let currentMode = 'base64';
+        let currentOperation = 'encrypt';
+
+        const terminalMessages = [
+            { text: 'Initializing Crypto Toolkit...', type: 'system', delay: 0 },
+            { text: 'Validating input...', type: 'info', delay: 300 },
+            { text: 'Executing algorithm...', type: 'info', delay: 600 },
+            { text: 'Generating output...', type: 'info', delay: 900 },
+            { text: 'Operation completed!', type: 'success', delay: 1200 }
+        ];
+
+        function showNotification(type, message) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'fadeInUp 0.5s ease reverse';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        function addTerminalLine(text, type) {
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            terminal.appendChild(line);
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            line.appendChild(cursor);
+            setTimeout(() => cursor.remove(), 600);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function base64Encode(str) {
+            return btoa(encodeURIComponent(str));
+        }
+
+        function base64Decode(str) {
+            return decodeURIComponent(atob(str));
+        }
+
+        function simpleAES(message, key, decrypt) {
+            let result = '';
+            key = key || 'defaultkey';
+            const keyCode = key.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0) % 256;
+            for (let i = 0; i < message.length; i++) {
+                const charCode = message.charCodeAt(i);
+                if (decrypt) {
+                    result += String.fromCharCode((charCode - keyCode + 256) % 256);
+                } else {
+                    result += String.fromCharCode((charCode + keyCode) % 256);
+                }
+            }
+            return decrypt ? result : btoa(result);
+        }
+
+        function simpleSHA256(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return btoa(Math.abs(hash).toString(16).padStart(64, '0'));
+        }
+
+        function simpleMD5(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 4) - hash) + char;
+                hash = hash & hash;
+            }
+            return btoa(Math.abs(hash).toString(16).padStart(32, '0'));
+        }
+
+        function rot13(str) {
+            return str.replace(/[a-zA-Z]/g, c => {
+                const base = c <= 'Z' ? 65 : 97;
+                return String.fromCharCode((c.charCodeAt(0) - base + 13) % 26 + base);
+            });
+        }
+
+        function caesarCipher(str, shift, decrypt) {
+            shift = parseInt(shift) || 3;
+            if (decrypt) shift = -shift;
+            return str.replace(/[a-zA-Z]/g, c => {
+                const base = c <= 'Z' ? 65 : 97;
+                return String.fromCharCode((c.charCodeAt(0) - base + shift + 26) % 26 + base);
+            });
+        }
+
+        function vigenereCipher(text, key, decrypt) {
+            key = key.toUpperCase().replace(/[^A-Z]/g, '');
+            if (!key) throw new Error('Invalid key');
+            let result = '';
+            for (let i = 0, j = 0; i < text.length; i++) {
+                const c = text[i];
+                if (/[A-Z]/.test(c)) {
+                    const shift = (key.charCodeAt(j % key.length) - 65) * (decrypt ? -1 : 1);
+                    result += String.fromCharCode((c.charCodeAt(0) - 65 + shift + 26) % 26 + 65);
+                    j++;
+                } else if (/[a-z]/.test(c)) {
+                    const shift = (key.charCodeAt(j % key.length) - 65) * (decrypt ? -1 : 1);
+                    result += String.fromCharCode((c.charCodeAt(0) - 97 + shift + 26) % 26 + 97);
+                    j++;
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+
+        function hexEncode(str) {
+            return Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+        }
+
+        function hexDecode(hex) {
+            if (!/^[0-9a-fA-F]+$/.test(hex) || hex.length % 2 !== 0) throw new Error('Invalid hex string');
+            return hex.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('');
+        }
+
+        async function processCrypto() {
+            const input = inputText.value.trim();
+            const key = cryptoKey.value.trim();
+
+            if (!input) {
+                errorMessage.textContent = 'Please enter text to process';
+                cryptoError.style.display = 'block';
+                inputText.focus();
+                showNotification('error', 'No input provided');
+                return;
+            }
+
+            if (['aes', 'caesar', 'vigenere'].includes(currentMode) && !key) {
+                errorMessage.textContent = 'Please enter an encryption key';
+                cryptoError.style.display = 'block';
+                cryptoKey.focus();
+                showNotification('error', 'Encryption key required');
+                return;
+            }
+
+            cryptoError.style.display = 'none';
+            terminal.innerHTML = '';
+            info.style.display = 'none';
+            processButton.disabled = true;
+            processButton.textContent = 'Processing...';
+            progressContainer.style.display = 'block';
+            loadingAnimation.style.display = 'flex';
+
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                }
+                progressBar.style.width = `${progress}%`;
+            }, 200);
+
+            try {
+                for (const msg of terminalMessages) {
+                    await new Promise(resolve => setTimeout(() => {
+                        addTerminalLine(msg.text, msg.type);
+                        resolve();
+                    }, msg.delay));
+                }
+
+                let result;
+                let details = [];
+
+                switch (currentMode) {
+                    case 'base64':
+                        result = currentOperation === 'encrypt' ? base64Encode(input) : base64Decode(input);
+                        details = [
+                            { title: 'Algorithm', content: 'Base64' },
+                            { title: 'Operation', content: currentOperation.charAt(0).toUpperCase() + currentOperation.slice(1) }
+                        ];
+                        break;
+
+                    case 'aes':
+                        result = simpleAES(input, key, currentOperation === 'decrypt');
+                        if (currentOperation === 'decrypt') result = atob(result);
+                        details = [
+                            { title: 'Algorithm', content: 'Simple AES' },
+                            { title: 'Operation', content: currentOperation.charAt(0).toUpperCase() + currentOperation.slice(1) },
+                            { title: 'Key', content: key.length > 4 ? key.substring(0, 4) + '...' : key }
+                        ];
+                        break;
+
+                    case 'sha256':
+                        result = simpleSHA256(input);
+                        details = [
+                            { title: 'Algorithm', content: 'SHA-256' },
+                            { title: 'Operation', content: 'Hash' }
+                        ];
+                        break;
+
+                    case 'hex':
+                        result = currentOperation === 'encrypt' ? hexEncode(input) : hexDecode(input);
+                        details = [
+                            { title: 'Algorithm', content: 'Hexadecimal' },
+                            { title: 'Operation', content: currentOperation.charAt(0).toUpperCase() + currentOperation.slice(1) }
+                        ];
+                        break;
+
+                    case 'md5':
+                        result = simpleMD5(input);
+                        details = [
+                            { title: 'Algorithm', content: 'MD5' },
+                            { title: 'Operation', content: 'Hash' }
+                        ];
+                        break;
+
+                    case 'rot13':
+                        result = rot13(input);
+                        details = [
+                            { title: 'Algorithm', content: 'ROT13' },
+                            { title: 'Operation', content: 'Transform' }
+                        ];
+                        break;
+
+                    case 'caesar':
+                        result = caesarCipher(input, key, currentOperation === 'decrypt');
+                        details = [
+                            { title: 'Algorithm', content: 'Caesar Cipher' },
+                            { title: 'Operation', content: currentOperation.charAt(0).toUpperCase() + currentOperation.slice(1) },
+                            { title: 'Shift', content: parseInt(key) || 3 }
+                        ];
+                        break;
+
+                    case 'vigenere':
+                        result = vigenereCipher(input, key, currentOperation === 'decrypt');
+                        details = [
+                            { title: 'Algorithm', content: 'Vigenere Cipher' },
+                            { title: 'Operation', content: currentOperation.charAt(0).toUpperCase() + currentOperation.slice(1) },
+                            { title: 'Key', content: key.length > 4 ? key.substring(0, 4) + '...' : key }
+                        ];
+                        break;
+
+                    default:
+                        throw new Error('Unknown algorithm');
+                }
+
+                resultInfo.innerHTML = `
+                    <div class="info-item">
+                        <div class="info-title">Result</div>
+                        <div class="info-content">${result}</div>
+                    </div>
+                `;
+
+                detailsInfo.innerHTML = details.map(detail => `
+                    <div class="info-item">
+                        <div class="info-title">${detail.title}</div>
+                        <div class="info-content">${detail.content}</div>
+                    </div>
+                `).join('');
+
+                info.style.display = 'block';
+                info.scrollIntoView({ behavior: 'smooth' });
+                showNotification('success', 'Operation completed successfully');
+            } catch (error) {
+                addTerminalLine(`Error: ${error.message}`, 'error');
+                errorMessage.textContent = error.message;
+                cryptoError.style.display = 'block';
+                showNotification('error', error.message);
+            } finally {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    loadingAnimation.style.display = 'none';
+                    processButton.disabled = false;
+                    processButton.textContent = 'Process';
+                }, 300);
+            }
+        }
+
+        modeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modeButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentMode = button.dataset.mode;
+
+                keyInput.classList.toggle('active', ['aes', 'caesar', 'vigenere'].includes(currentMode));
+
+                if (['sha256', 'md5'].includes(currentMode)) {
+                    operationButtons.forEach(btn => {
+                        btn.disabled = btn.dataset.operation === 'decrypt';
+                        if (btn.dataset.operation === 'decrypt') btn.classList.remove('active');
+                        if (btn.dataset.operation === 'encrypt') btn.classList.add('active');
+                    });
+                    currentOperation = 'encrypt';
+                } else {
+                    operationButtons.forEach(btn => btn.disabled = false);
+                }
+            });
+        });
+
+        operationButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (!button.disabled) {
+                    operationButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentOperation = button.dataset.operation;
+                }
+            });
+        });
+
+        processButton.addEventListener('click', processCrypto);
+
+        inputText.addEventListener('keypress', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                processCrypto();
+            }
+        });
+
+        inputText.addEventListener('input', () => cryptoError.style.display = 'none');
+        cryptoKey.addEventListener('input', () => cryptoError.style.display = 'none');
+    </script>
+</body>
+</html>
+<script>
+  // Prevent right-click context menu
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Disable common keyboard shortcuts (F12, Ctrl+Shift+I, Ctrl+U, etc.)
+document.addEventListener('keydown', function(e) {
+    if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
+        (e.ctrlKey && e.key === 'U')
+    ) {
+        e.preventDefault();
+    }
+});
+
+// Disable text selection
+document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+});
+
+// Disable drag and drop
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+});
+
+// Attempt to block developer tools by detecting focus change (less reliable)
+window.addEventListener('resize', function() {
+    if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200) {
+        // Suspicious resize, possibly dev tools
+        document.body.innerHTML = '<h1>Access Denied</h1>';
+    }
+});
+
+// Obfuscate source code by overriding View Source (not fully effective)
+document.addEventListener('DOMContentLoaded', function() {
+    // Redirect or block Ctrl+U (already handled in keydown)
+    // Optionally, add a fake source view
+    window.open = function(url) {
+        if (url.includes('view-source')) {
+            alert('Source view is disabled.');
+            return false;
+        }
+    };
+});
+
+// Detect and block common browser extensions like Edora (basic heuristic)
+(function() {
+    const suspiciousClasses = ['edora', 'inspector', 'devtools'];
+    const checkExtensions = setInterval(function() {
+        suspiciousClasses.forEach(cls => {
+            if (document.querySelector(`.${cls}`)) {
+                document.body.innerHTML = '<h1>Unauthorized Tool Detected</h1>';
+                clearInterval(checkExtensions);
+            }
+        });
+    }, 1000);
+})();
+</script>
